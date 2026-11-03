@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>1RM-kalkylator – räkna ut ditt max | Tyngdpunkt</title>
+<meta name="description" content="Uppskatta ditt 1RM (one rep max) ur ett vanligt set med Epleys formel, och se vad du borde klara på 3, 5, 8 och 10 reps.">
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head><body>
+<header><div class="in"><a class="brand" href="../index.html"><img src="../assets/logo.svg" alt="">Tyngdpunkt</a><nav><a href="../kaloribehov/">Kaloribehov</a><a href="../proteinbehov/">Protein</a><a href="../1rm/" class="on">1RM</a><a href="../artiklar/">Artiklar</a><a href="../tyngdpunkt/">Appen</a></nav></div></header>
+<main>
+
+<h1>Räkna ut ditt 1RM</h1>
+<p class="lead">Uppskatta hur mycket du orkar lyfta en gång, utan att testa max. Skriv in ett set du har gjort.</p>
+<div class="card"><div class="grid">
+ <div><label for="rw">Vikt på stången (kg)</label><input id="rw" type="number" inputmode="decimal" value="100"></div>
+ <div><label for="rr">Antal reps</label><input id="rr" type="number" inputmode="numeric" value="5"></div>
+</div></div>
+<div class="card"><div class="res"><div><div class="k">Uppskattat max (1RM)</div><span class="big" id="rmT">–</span> <span class="unit">kg</span></div></div>
+<div class="calc" id="rmCalc"></div></div>
+<div class="card"><div class="k" style="margin-bottom:6px">Vad du borde klara på fler reps</div><table id="rmTab"></table></div>
+<div class="cta"><p><strong>Slipp räkna själv.</strong> Tyngdpunkt följer ditt uppskattade max i varje övning och ökar vikt och reps när det är dags.</p><div><a class="btn" href="https://groups.google.com/g/tyngdpunkt_app">Testa appen</a><div class="soon">Kommer snart på Google Play (Android)</div></div></div>
+<h2>Så räknar vi</h2>
+<div class="faq">
+ <p>Vi använder Epleys formel: vikt × (1 + reps ÷ 30). 100 kg × 5 reps ger ungefär 116,5 kg. Tabellen räknar baklänges från ditt max till hur mycket du borde klara på fler reps.</p>
+ <p><strong>Hur säkert är det?</strong> Uppskattningen är säkrast mellan 3 och 10 reps. Med fler reps spelar uthållighet större roll, och formeln blir mer osäker. Ta ett set som var tungt men med bra teknik.</p>
+ <p><strong>Varför inte bara testa?</strong> Ett maxtest kräver uppvärmning, en spotter och en dag då du är pigg. Ett uppskattat max ur vanliga set går att följa vecka för vecka och visar om du blir starkare.</p>
+ <p>Mer: <a href="../kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="../proteinbehov/">hur mycket protein du behöver</a></p>
+</div>
+
+</main>
+<footer><nav><a href="../kaloribehov/">Kaloribehov</a><a href="../proteinbehov/">Protein</a><a href="../1rm/">1RM</a><a href="../artiklar/">Artiklar</a><a href="../tyngdpunkt/hjalp.html">Hjälp och kontakt</a><a href="../tyngdpunkt/integritet.html">Integritetspolicy</a></nav>
+Kalkylatorerna ger uppskattningar, inte medicinska råd. Livsmedelsdata: Livsmedelsverkets livsmedelsdatabas.</footer>
+<script src='../assets/kalkyl.js'></script><script>rmPage()</script>
+</body></html>

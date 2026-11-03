@@ -1,0 +1,61 @@
+/* Webbplatsen i appens ljusa stil (riktning A, "Stämplat"): ljusgrå botten, vita kort, svart text, en röd färg. */
+:root{--bg:#f1f2ef;--surface:#fff;--ink:#17191c;--sub:#4f555c;--faint:#666b72;--line:#e3e5e1;--border:#c9ccc7;--accent:#c4122f;--accentbg:#fbe9ec;
+  --num:'Barlow Condensed',system-ui,sans-serif;--shadow:0 1px 2px rgba(23,25,28,.06),0 3px 10px rgba(23,25,28,.07)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif}
+a{color:var(--accent)}
+header{background:var(--ink);color:#fff}
+header .in{max-width:760px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:800;font-size:18px;letter-spacing:-.3px}
+.brand img{width:38px;height:21px;display:block}
+nav{margin-left:auto;display:flex;gap:2px;flex-wrap:wrap}
+nav a{color:#c9ccc7;text-decoration:none;font-size:14px;padding:6px 10px;border-radius:6px}
+nav a:hover{color:#fff}
+nav a.on{background:#2a2c30;color:#fff}
+main{max-width:760px;margin:0 auto;padding:28px 16px 48px}
+h1{font-size:32px;line-height:1.15;margin:0 0 8px;letter-spacing:-.6px}
+h2{font-size:20px;margin:30px 0 8px;letter-spacing:-.2px}
+.lead{color:var(--sub);margin:0 0 22px;font-size:17px}
+.card{background:var(--surface);border-radius:8px;padding:18px;box-shadow:var(--shadow);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:540px){.grid{grid-template-columns:1fr}h1{font-size:27px}}
+@media(max-width:640px){header nav{margin-left:0;width:100%;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}header nav a{white-space:nowrap;padding:5px 9px}}
+label{display:block;font-size:13px;color:var(--sub);margin-bottom:4px}
+input,select{width:100%;font:inherit;padding:9px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--ink)}
+.seg{display:flex;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.seg button{flex:1;border:0;background:#fff;font:inherit;font-size:14px;padding:8px;cursor:pointer;color:var(--ink)}
+.seg button.on{background:var(--ink);color:#fff}
+.big{font-family:var(--num);font-weight:700;font-size:56px;line-height:1;letter-spacing:-.5px}
+.mid{font-size:36px}
+.unit{font-size:20px;color:var(--sub);font-family:system-ui,sans-serif;font-weight:500}
+.res{display:flex;gap:28px;flex-wrap:wrap;align-items:flex-end}
+.k{font-size:13px;color:var(--sub)}
+.calc{margin-top:14px;border-top:1px solid var(--line);padding-top:12px;font-size:14px;color:var(--sub)}
+.calc div{display:flex;justify-content:space-between;gap:12px;padding:3px 0}
+.calc b{font-family:var(--num);font-size:18px;color:var(--ink);font-weight:600;white-space:nowrap}
+table{width:100%;border-collapse:collapse;font-size:15px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{font-size:13px;color:var(--sub);font-weight:600}
+td.n{font-family:var(--num);font-size:19px;font-weight:600;white-space:nowrap}
+.cta{background:var(--ink);color:#fff;border-radius:8px;padding:18px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin:8px 0 16px}
+.cta p{margin:0;flex:1;min-width:230px;color:#d6d8d4}
+.cta strong{color:#fff}
+.btn{display:inline-block;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;padding:11px 16px;border-radius:6px;box-shadow:0 2px 0 #7a0b1d;white-space:nowrap}
+.btn:active{transform:translateY(2px);box-shadow:none}
+.soon{font-size:13px;color:#c9ccc7;margin-top:6px}
+.faq p{color:var(--sub);margin:0 0 12px}
+.faq strong{color:var(--ink)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:8px}
+@media(max-width:640px){.tiles{grid-template-columns:1fr}}
+.tile{display:block;background:var(--surface);border-radius:8px;padding:16px;box-shadow:var(--shadow);text-decoration:none;color:var(--ink)}
+.tile b{display:block;font-size:17px;margin-bottom:4px}
+.tile span{font-size:14px;color:var(--sub)}
+.tile:hover{outline:2px solid var(--ink)}
+.bar{width:56px;height:7px;background:var(--accent);border-radius:2px;margin-bottom:16px}
+.small{font-size:13px;color:var(--faint)}
+.doc section{background:var(--surface);border-radius:8px;padding:6px 18px 14px;margin-bottom:14px;box-shadow:var(--shadow)}
+.doc section p,.doc section li{color:var(--sub)}
+.doc ul{padding-left:20px}
+footer{max-width:760px;margin:0 auto;padding:0 16px 36px;font-size:13px;color:var(--faint)}
+footer nav{margin:0 0 6px;gap:14px}
+footer nav a{color:var(--sub);padding:0}

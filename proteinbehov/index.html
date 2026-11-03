@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hur mycket protein behöver jag? Kalkylator | Tyngdpunkt</title>
+<meta name="description" content="Räkna ut ditt proteinbehov per dag när du styrketränar, och se hur mycket protein det är i vanlig svensk mat enligt Livsmedelsverket.">
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head><body>
+<header><div class="in"><a class="brand" href="../index.html"><img src="../assets/logo.svg" alt="">Tyngdpunkt</a><nav><a href="../kaloribehov/">Kaloribehov</a><a href="../proteinbehov/" class="on">Protein</a><a href="../1rm/">1RM</a><a href="../artiklar/">Artiklar</a><a href="../tyngdpunkt/">Appen</a></nav></div></header>
+<main>
+
+<h1>Hur mycket protein behöver jag?</h1>
+<p class="lead">Proteinbehovet per dag när du styrketränar, beroende på om du vill gå ner i fett, bygga muskler eller ligga kvar.</p>
+<div class="card"><div class="grid">
+ <div><label for="pw">Vikt (kg)</label><input id="pw" type="number" inputmode="decimal" value="85"></div>
+ <div><label for="pg">Mål</label><select id="pg"><option value="fett">Gå ner i fett</option><option value="muskler" selected>Bygga muskler</option><option value="underhalla">Ligga kvar</option></select></div>
+ <div id="pgwBox"><label for="pgw">Målvikt (kg, valfritt)</label><input id="pgw" type="number" inputmode="decimal" placeholder="t.ex. 78"></div>
+ <div><label for="pm">Måltider per dag</label><select id="pm"><option>3</option><option selected>4</option><option>5</option></select></div>
+</div></div>
+<div class="card"><div class="res">
+ <div><div class="k">Protein per dag</div><span class="big" id="pT">–</span> <span class="unit">g</span></div>
+ <div><div class="k">Per måltid</div><span class="big mid" id="pM">–</span> <span class="unit">g</span></div>
+</div><div class="calc" id="pCalc"></div></div>
+<div class="card"><div class="k" style="margin-bottom:6px">Så mycket protein är det i vanlig svensk mat</div><table id="pFood"></table>
+<p class="small" style="margin:8px 0 0">Källa: Livsmedelsverkets livsmedelsdatabas.</p></div>
+<div class="cta"><p><strong>Svårt att komma upp i det?</strong> Tyngdpunkt visar hur mycket protein du har kvar i dag och föreslår varor du redan brukar äta.</p><div><a class="btn" href="https://groups.google.com/g/tyngdpunkt_app">Testa appen</a><div class="soon">Kommer snart på Google Play (Android)</div></div></div>
+<h2>Så räknar vi</h2>
+<div class="faq">
+ <p>För den som styrketränar räknar vi med 2,2 g per kilo kroppsvikt när du går ner i fett, 2,0 g när du bygger muskler och 1,8 g när du ligger kvar. Mer protein under en deff hjälper till att behålla musklerna när du äter mindre.</p>
+ <p><strong>Varför målvikten?</strong> Under en deff med målvikt räknas proteinet på målvikten. Det räcker för att behålla musklerna och är lättare att nå för den som väger mycket: 98 kg × 2,2 g är 215 g, men 88 kg ger 195 g.</p>
+ <p><strong>Måste jag dela upp det?</strong> Totalen per dag är det viktigaste. Att sprida proteinet över dagens måltider gör det lättare att komma upp i det.</p>
+ <p>Mer: <a href="../kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="../1rm/">räkna ut ditt 1RM</a></p>
+</div>
+
+</main>
+<footer><nav><a href="../kaloribehov/">Kaloribehov</a><a href="../proteinbehov/">Protein</a><a href="../1rm/">1RM</a><a href="../artiklar/">Artiklar</a><a href="../tyngdpunkt/hjalp.html">Hjälp och kontakt</a><a href="../tyngdpunkt/integritet.html">Integritetspolicy</a></nav>
+Kalkylatorerna ger uppskattningar, inte medicinska råd. Livsmedelsdata: Livsmedelsverkets livsmedelsdatabas.</footer>
+<script src='../assets/kalkyl.js'></script><script>protPage()</script>
+</body></html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Räkna ut ditt kaloribehov – kalkylator | Tyngdpunkt</title>
+<meta name="description" content="Kalkylator för kaloribehov: hur mycket du gör av med per dag och hur mycket du ska äta för att gå ner i vikt eller bygga muskler. Uträkningen visas steg för steg.">
+<link rel="icon" href="../assets/logo.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/style.css">
+</head><body>
+<header><div class="in"><a class="brand" href="../index.html"><img src="../assets/logo.svg" alt="">Tyngdpunkt</a><nav><a href="../kaloribehov/" class="on">Kaloribehov</a><a href="../proteinbehov/">Protein</a><a href="../1rm/">1RM</a><a href="../artiklar/">Artiklar</a><a href="../tyngdpunkt/">Appen</a></nav></div></header>
+<main>
+
+<h1>Räkna ut ditt kaloribehov</h1>
+<p class="lead">Hur mycket du gör av med på en dag, och hur mycket du ska äta för att gå ner i fett, bygga muskler eller ligga kvar.</p>
+<div class="card"><div class="grid">
+ <div><label>Kön</label><div class="seg" id="sex"><button class="on" data-v="man">Man</button><button data-v="kvinna">Kvinna</button></div></div>
+ <div><label for="age">Ålder</label><input id="age" type="number" inputmode="numeric" value="35"></div>
+ <div><label for="h">Längd (cm)</label><input id="h" type="number" inputmode="numeric" value="180"></div>
+ <div><label for="w">Vikt (kg)</label><input id="w" type="number" inputmode="decimal" value="85"></div>
+ <div><label for="days">Träningspass per vecka</label><select id="days"><option>0</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></div>
+ <div><label for="goal">Mål</label><select id="goal"><option value="fett">Gå ner i fett</option><option value="muskler">Bygga muskler</option><option value="underhalla">Ligga kvar</option></select></div>
+ <div id="paceBox"><label for="pace">Takt (kg per vecka)</label><select id="pace"></select></div>
+</div></div>
+<div class="card"><div class="res">
+ <div><div class="k">Ät per dag</div><span class="big" id="kTarget">–</span> <span class="unit">kcal</span></div>
+ <div><div class="k">Du gör av med</div><span class="big mid" id="kTdee">–</span> <span class="unit">kcal</span></div>
+</div><div class="calc" id="kCalc"></div></div>
+<div class="cta"><p><strong>Det här är en startgissning.</strong> Tyngdpunkt räknar om den varje vecka utifrån hur din vikt faktiskt rör sig, och ser samtidigt om du blir starkare.</p><div><a class="btn" href="https://groups.google.com/g/tyngdpunkt_app">Testa appen</a><div class="soon">Kommer snart på Google Play (Android)</div></div></div>
+<h2>Så räknar vi</h2>
+<div class="faq">
+ <p>Vilan räknas med Mifflin–St Jeor, den vanligaste formeln: 10 × vikt + 6,25 × längd − 5 × ålder, plus 5 för män och minus 161 för kvinnor. Den multipliceras med en faktor för hur ofta du tränar, från 1,4 vid två pass i veckan eller färre till 1,55 vid fem eller fler.</p>
+ <p>Ett kilo kroppsfett motsvarar ungefär 7 700 kcal. En takt på 0,5 kg i veckan betyder därför 550 kcal mindre per dag (0,5 × 7 700 ÷ 7). Resultatet avrundas till närmaste 50 kcal.</p>
+ <p><strong>Varför stämmer det inte för mig?</strong> Formeln är ett snitt för många människor. Väg dig några gånger i veckan i tre veckor och ät ungefär samma mängd. Går vikten ner, upp eller står den still vet du ditt verkliga behov.</p>
+ <p><strong>Hur snabbt ska jag gå ner?</strong> 0,25–0,5 kg i veckan brukar vara lagom för den som styrketränar och vill behålla musklerna. Snabbare går, men styrkan sjunker oftare.</p>
+ <p>Mer: <a href="../proteinbehov/">hur mycket protein du behöver</a> · <a href="../1rm/">räkna ut ditt 1RM</a></p>
+</div>
+
+</main>
+<footer><nav><a href="../kaloribehov/">Kaloribehov</a><a href="../proteinbehov/">Protein</a><a href="../1rm/">1RM</a><a href="../artiklar/">Artiklar</a><a href="../tyngdpunkt/hjalp.html">Hjälp och kontakt</a><a href="../tyngdpunkt/integritet.html">Integritetspolicy</a></nav>
+Kalkylatorerna ger uppskattningar, inte medicinska råd. Livsmedelsdata: Livsmedelsverkets livsmedelsdatabas.</footer>
+<script src='../assets/kalkyl.js'></script><script>kcalPage()</script>
+</body></html>
