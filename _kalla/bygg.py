@@ -13,6 +13,9 @@ from pathlib import Path
 import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
+# Appens läge styr knappen på alla sidor (seo-strategi.md, avsnitt 10). Byt till 'publicerad' när appen finns på
+# Google Play – och kontrollera med Andreas att provperioden finns i den publicerade versionen (raden "30 dagar gratis").
+APP_STATUS = 'test'
 GROUP = 'https://groups.google.com/g/tyngdpunkt_app'
 OPT_IN = 'https://play.google.com/apps/testing/se.tyngdpunkt.app'
 PLAY = 'https://play.google.com/store/apps/details?id=se.tyngdpunkt.app'
@@ -70,8 +73,11 @@ def redirect(path, to):
 
 # Appen finns i stängt test: knappen leder till testgruppen tills den är publicerad på Google Play.
 def cta(text):
-    return (f'<div class="cta"><p>{text}</p><div><a class="btn" href="{{r}}tyngdpunkt/testa/">Bli testare</a>'
-            '<div class="soon">Android. iPhone-versionen finns inte än.</div></div></div>')
+    if APP_STATUS == 'publicerad':
+        btn, href, under = 'Ladda ner på Google Play', PLAY, '30 dagar gratis. Android, iPhone-versionen finns inte än.'
+    else:
+        btn, href, under = 'Bli testare', '{r}tyngdpunkt/testa/', 'Android. iPhone-versionen finns inte än.'
+    return f'<div class="cta"><p>{text}</p><div><a class="btn" href="{href}">{btn}</a><div class="soon">{under}</div></div></div>'
 
 
 # ---------- Artiklar ----------
@@ -124,6 +130,12 @@ def article_list(items, r='{r}'):
                    f'<span>{H.escape(a.get("beskrivning", ""))}</span></a>' for a in items)
 
 
+# "Läs mer" under en kalkylator: de senaste artiklarna som hör till den (fältet kalkylator), högst fem.
+def related(calc):
+    items = [a for a in ARTICLES if a.get('kalkylator') == calc][:5]
+    return f'<h2>Läs mer</h2>{article_list(items)}' if items else ''
+
+
 # ---------- Startsidan ----------
 page('index.html', 'Kalkylatorer för träning och kost | Tyngdpunkt',
      'Räkna ut kaloribehov, proteinbehov och 1RM på svenska, med uträkningen synlig. Från Tyngdpunkt.', '''
@@ -165,10 +177,11 @@ page('kaloribehov/index.html', 'Räkna ut ditt kaloribehov – kalkylator | Tyng
  <p>Vilan räknas med Mifflin–St Jeor, en av de mest använda formlerna: 10 × vikt + 6,25 × längd − 5 × ålder, plus 5 för män och minus 161 för kvinnor. Den multipliceras med en faktor för hur ofta du tränar, från 1,2 om du inte tränar till 1,55 vid fem pass eller fler.</p>
  <p>Ett kilo kroppsfett motsvarar ungefär 7 700 kcal. En takt på 0,5 kg i veckan betyder därför 550 kcal mindre per dag (0,5 × 7 700 ÷ 7). Resultatet avrundas till närmaste 50 kcal.</p>
  <p><strong>Varför stämmer det inte för mig?</strong> Formeln är ett snitt för många människor. Väg dig några gånger i veckan i tre veckor och ät ungefär samma mängd. Går vikten ner, upp eller står den still vet du ditt verkliga behov.</p>
- <p><strong>Hur snabbt ska jag gå ner?</strong> 0,25–0,5 kg i veckan brukar vara lagom för den som styrketränar och vill behålla musklerna. Snabbare går, men styrkan sjunker oftare.</p>
+ <p><strong>Hur snabbt ska jag gå ner?</strong> För den som styrketränar och vill behålla musklerna brukar 0,5–1 % av kroppsvikten i veckan rekommenderas. För den som väger 85 kg är det ungefär 0,4–0,85 kg. En lugnare takt gör det lättare att behålla styrkan.</p>
  <p>Mer: <a href="{r}proteinbehov/">hur mycket protein du behöver</a> · <a href="{r}1rm/">räkna ut ditt 1RM</a></p>
+ <p class="small">Källa för takten: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4033492/">Helms m.fl. (2014), Journal of the International Society of Sports Nutrition</a>.</p>
 </div>
-''', script='kcalPage()', on='kaloribehov/')
+''' + related('kaloribehov'), script='kcalPage()', on='kaloribehov/')
 
 # ---------- Protein ----------
 page('proteinbehov/index.html', 'Hur mycket protein behöver jag? Kalkylator | Tyngdpunkt',
@@ -190,12 +203,13 @@ page('proteinbehov/index.html', 'Hur mycket protein behöver jag? Kalkylator | T
 ''' + cta('<strong>Svårt att komma upp i det?</strong> Tyngdpunkt visar hur mycket protein du har kvar i dag och föreslår proteinrika varor bland det du brukar äta.') + '''
 <h2>Så räknar vi</h2>
 <div class="faq">
- <p>För den som styrketränar räknar vi med 2,2 g per kilo kroppsvikt när du går ner i fett, 2,0 g när du bygger muskler och 1,8 g när du ligger kvar. Mer protein under en deff hjälper till att behålla musklerna när du äter mindre.</p>
+ <p>För den som styrketränar räknar vi med 2,2 g per kilo kroppsvikt när du går ner i fett, 2,0 g när du bygger muskler och 1,8 g när du ligger kvar. I den största sammanställningen planade effekten på muskelmassan ut vid ungefär 1,6 g per kilo, med ett osäkerhetsspann upp till 2,2 g. Vi räknar i den övre delen för att vara säkra. Under en deff talar mer för att ligga högt, eftersom det hjälper till att behålla musklerna när du äter mindre.</p>
  <p><strong>Varför målvikten?</strong> Under en deff med målvikt räknas proteinet på målvikten. Det räcker för att behålla musklerna och är lättare att nå för den som väger mycket: 98 kg × 2,2 g är 215 g, men 88 kg ger 195 g.</p>
  <p><strong>Måste jag dela upp det?</strong> Totalen per dag är det viktigaste. Att sprida proteinet över dagens måltider gör det lättare att komma upp i det.</p>
  <p>Mer: <a href="{r}kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="{r}1rm/">räkna ut ditt 1RM</a></p>
+ <p class="small">Källa: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5867436/">Morton m.fl. (2018), British Journal of Sports Medicine</a>.</p>
 </div>
-''', script='protPage()', on='proteinbehov/')
+''' + related('proteinbehov'), script='protPage()', on='proteinbehov/')
 
 # ---------- 1RM ----------
 page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
@@ -218,15 +232,30 @@ page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
  <p class="small">Formeln: Epley (1985).</p>
  <p>Mer: <a href="{r}kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="{r}proteinbehov/">hur mycket protein du behöver</a></p>
 </div>
-''', script='rmPage()', on='1rm/')
+''' + related('1rm'), script='rmPage()', on='1rm/')
 
 # ---------- Artikelsidorna ----------
 for a in ARTICLES:
+    # "## I appen" är artikelns egen mening om appen; den blir CTA-rutan och tas bort ur brödtexten.
+    m = re.search(r'^## I appen\s*\n(.*?)(?=^## |\Z)', a['body'], re.S | re.M)
+    app_text = markdown.markdown(m.group(1).strip())[3:-4] if m else None  # utan omslutande <p>
+    a['body'] = (a['body'][:m.start()] + a['body'][m.end():]) if m else a['body']
+    # CTA-rutan en gång, sist före "Vanliga frågor" (eller sist om avsnittet saknas).
+    cta_box = cta(app_text) if app_text else ''
+    if re.search(r'^## Vanliga frågor', a['body'], re.M):
+        a['body'] = re.sub(r'^## Vanliga frågor', '<!--CTA-->\n\n## Vanliga frågor', a['body'], count=1, flags=re.M)
+    else:
+        a['body'] += '\n\n<!--CTA-->\n'
     md = markdown.Markdown(extensions=['tables', 'toc', 'sane_lists'])
     content = md.convert(a['body'])
+    calc = CALC.get(a.get('kalkylator', ''))
+    # Kalkylatorrutan direkt efter det första svaret.
+    calc_box = (f'<div class="card" style="box-shadow:none;border:1px solid var(--line)"><b>{calc[1]}</b>'
+                f'<p class="small" style="margin:4px 0 8px">Kalkylatorn visar uträkningen steg för steg.</p>'
+                f'<a class="btn" href="{{r}}{calc[0]}">Till kalkylatorn</a></div>') if calc else ''
+    content = content.replace('</p>', '</p>' + calc_box, 1).replace('<!--CTA-->', cta_box)
     words = len(re.findall(r'\w+', a['body']))
     changed = a.get('uppdaterad') or a['publicera']
-    calc = CALC.get(a.get('kalkylator', ''))
     others = [o for o in ARTICLES if o is not a][:3]
     url = f'{DOMAIN}/artiklar/{a["slug"]}/'
     ld = [{'@context': 'https://schema.org', '@type': 'Article', 'headline': a['titel'], 'description': a.get('beskrivning', ''),
@@ -239,9 +268,6 @@ for a in ARTICLES:
     body = (f'<p class="small"><a href="{{r}}artiklar/">Artiklar</a> · {sv_date(a["publicera"])}'
             f'{f" · uppdaterad {sv_date(changed)}" if changed != a["publicera"] else ""} · {max(1, round(words / 200))} min läsning</p>'
             f'<article class="prose"><h1>{H.escape(a["titel"])}</h1>{content}</article>'
-            + (f'<div class="card"><b>{calc[1]}</b><p class="small" style="margin:4px 0 8px">Kalkylatorn visar uträkningen steg för steg.</p>'
-               f'<a class="btn" href="{{r}}{calc[0]}">Till kalkylatorn</a></div>' if calc else '')
-            + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. Varje vecka går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.')
             + (f'<h2>Läs mer</h2>{article_list(others)}' if others else ''))
     page(f'artiklar/{a["slug"]}/index.html', a.get('seo_titel') or f'{a["titel"]} | Tyngdpunkt', a.get('beskrivning', ''), body,
          on='artiklar/', kind='article', jsonld=ld, lastmod=changed)
