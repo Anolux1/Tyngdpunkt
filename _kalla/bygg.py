@@ -14,6 +14,8 @@ import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
 GROUP = 'https://groups.google.com/g/tyngdpunkt_app'
+OPT_IN = 'https://play.google.com/apps/testing/se.tyngdpunkt.app'
+PLAY = 'https://play.google.com/store/apps/details?id=se.tyngdpunkt.app'
 DOMAIN = 'https://tyngdpunkt.se'
 TODAY = datetime.date.today().isoformat()
 SITEMAP = []  # (adress, ändringsdatum) för sitemap.xml
@@ -68,8 +70,8 @@ def redirect(path, to):
 
 # Appen finns i stängt test: knappen leder till testgruppen tills den är publicerad på Google Play.
 def cta(text):
-    return (f'<div class="cta"><p>{text}</p><div><a class="btn" href="{GROUP}">Testa appen</a>'
-            '<div class="soon">Kommer snart på Google Play (Android)</div></div></div>')
+    return (f'<div class="cta"><p>{text}</p><div><a class="btn" href="{{r}}tyngdpunkt/testa/">Bli testare</a>'
+            '<div class="soon">Android. iPhone-versionen finns inte än.</div></div></div>')
 
 
 # ---------- Artiklar ----------
@@ -123,7 +125,7 @@ def article_list(items, r='{r}'):
 
 
 # ---------- Startsidan ----------
-page('index.html', 'Kalkylatorer för träning och kost – Tyngdpunkt',
+page('index.html', 'Kalkylatorer för träning och kost | Tyngdpunkt',
      'Räkna ut kaloribehov, proteinbehov och 1RM på svenska, med uträkningen synlig. Från Tyngdpunkt.', '''
 <div class="bar"></div>
 <h1>Räkna på träning och kost</h1>
@@ -134,10 +136,10 @@ page('index.html', 'Kalkylatorer för träning och kost – Tyngdpunkt',
  <a class="tile" href="{r}1rm/"><b>1RM</b><span>Ditt uppskattade max ur ett vanligt set, utan att testa.</span></a>
 </div>
 <h2>Artiklar</h2>
-<p class="faq" style="color:var(--sub)">Svar på det man undrar när man tränar och vill äta rätt. <a href="{r}artiklar/">Alla artiklar</a></p>
+<p class="faq" style="color:var(--sub)">Svar på vanliga frågor om styrketräning och kost, med siffror och källor. <a href="{r}artiklar/">Alla artiklar</a></p>
 ''' + article_list(ARTICLES[:3]) + '''
 <h2>Appen</h2>
-''' + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. Varje vecka går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.'))
+''' + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. En gång i veckan går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.'))
 
 # ---------- Kaloribehov ----------
 page('kaloribehov/index.html', 'Räkna ut ditt kaloribehov – kalkylator | Tyngdpunkt',
@@ -157,10 +159,10 @@ page('kaloribehov/index.html', 'Räkna ut ditt kaloribehov – kalkylator | Tyng
  <div><div class="k">Ät per dag</div><span class="big" id="kTarget">–</span> <span class="unit">kcal</span></div>
  <div><div class="k">Du gör av med</div><span class="big mid" id="kTdee">–</span> <span class="unit">kcal</span></div>
 </div><div class="calc" id="kCalc"></div></div>
-''' + cta('<strong>Det här är en startgissning.</strong> Tyngdpunkt räknar om den varje vecka utifrån hur din vikt faktiskt rör sig, och ser samtidigt om du blir starkare.') + '''
+''' + cta('<strong>Det här är en startgissning.</strong> Tyngdpunkt stämmer av den en gång i veckan mot hur din vikt faktiskt rör sig, och föreslår en ändring först när du följt planen och vikten ändå går fel.') + '''
 <h2>Så räknar vi</h2>
 <div class="faq">
- <p>Vilan räknas med Mifflin–St Jeor, den vanligaste formeln: 10 × vikt + 6,25 × längd − 5 × ålder, plus 5 för män och minus 161 för kvinnor. Den multipliceras med en faktor för hur ofta du tränar, från 1,4 vid två pass i veckan eller färre till 1,55 vid fem eller fler.</p>
+ <p>Vilan räknas med Mifflin–St Jeor, en av de mest använda formlerna: 10 × vikt + 6,25 × längd − 5 × ålder, plus 5 för män och minus 161 för kvinnor. Den multipliceras med en faktor för hur ofta du tränar, från 1,2 om du inte tränar till 1,55 vid fem pass eller fler.</p>
  <p>Ett kilo kroppsfett motsvarar ungefär 7 700 kcal. En takt på 0,5 kg i veckan betyder därför 550 kcal mindre per dag (0,5 × 7 700 ÷ 7). Resultatet avrundas till närmaste 50 kcal.</p>
  <p><strong>Varför stämmer det inte för mig?</strong> Formeln är ett snitt för många människor. Väg dig några gånger i veckan i tre veckor och ät ungefär samma mängd. Går vikten ner, upp eller står den still vet du ditt verkliga behov.</p>
  <p><strong>Hur snabbt ska jag gå ner?</strong> 0,25–0,5 kg i veckan brukar vara lagom för den som styrketränar och vill behålla musklerna. Snabbare går, men styrkan sjunker oftare.</p>
@@ -185,7 +187,7 @@ page('proteinbehov/index.html', 'Hur mycket protein behöver jag? Kalkylator | T
 </div><div class="calc" id="pCalc"></div></div>
 <div class="card"><div class="k" style="margin-bottom:6px">Så mycket protein är det i vanlig svensk mat</div><table id="pFood"></table>
 <p class="small" style="margin:8px 0 0">Källa: Livsmedelsverkets livsmedelsdatabas.</p></div>
-''' + cta('<strong>Svårt att komma upp i det?</strong> Tyngdpunkt visar hur mycket protein du har kvar i dag och föreslår varor du redan brukar äta.') + '''
+''' + cta('<strong>Svårt att komma upp i det?</strong> Tyngdpunkt visar hur mycket protein du har kvar i dag och föreslår proteinrika varor bland det du brukar äta.') + '''
 <h2>Så räknar vi</h2>
 <div class="faq">
  <p>För den som styrketränar räknar vi med 2,2 g per kilo kroppsvikt när du går ner i fett, 2,0 g när du bygger muskler och 1,8 g när du ligger kvar. Mer protein under en deff hjälper till att behålla musklerna när du äter mindre.</p>
@@ -213,6 +215,7 @@ page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
  <p>Vi använder Epleys formel: vikt × (1 + reps ÷ 30). 100 kg × 5 reps ger ungefär 116,5 kg. Tabellen räknar baklänges från ditt max till hur mycket du borde klara på fler reps.</p>
  <p><strong>Hur säkert är det?</strong> Uppskattningen är säkrast mellan 3 och 10 reps. Med fler reps spelar uthållighet större roll, och formeln blir mer osäker. Ta ett set som var tungt men med bra teknik.</p>
  <p><strong>Varför inte bara testa?</strong> Ett maxtest kräver uppvärmning, en spotter och en dag då du är pigg. Ett uppskattat max ur vanliga set går att följa vecka för vecka och visar om du blir starkare.</p>
+ <p class="small">Formeln: Epley (1985).</p>
  <p>Mer: <a href="{r}kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="{r}proteinbehov/">hur mycket protein du behöver</a></p>
 </div>
 ''', script='rmPage()', on='1rm/')
@@ -246,8 +249,8 @@ for a in ARTICLES:
 page('artiklar/index.html', 'Artiklar om träning och kost | Tyngdpunkt',
      'Artiklar om styrketräning, kost, kaloribehov och protein – på svenska, med siffror och uträkningar.', '''
 <h1>Artiklar</h1>
-<p class="lead">Svar på det man undrar när man styrketränar och vill äta rätt – med siffror och uträkningar, inte löften.</p>
-''' + (article_list(ARTICLES) if ARTICLES else '''<div class="card"><p style="margin:0">De första artiklarna kommer snart. Under tiden kan du räkna på ditt
+<p class="lead">Svar på vanliga frågor om styrketräning och kost. Med siffror, uträkningar och källor.</p>
+''' + (article_list(ARTICLES) if ARTICLES else '''<div class="card"><p style="margin:0">Den första artikeln kommer den 7 november. Under tiden kan du räkna på ditt
 <a href="{r}kaloribehov/">kaloribehov</a>, ditt <a href="{r}proteinbehov/">proteinbehov</a> eller ditt <a href="{r}1rm/">1RM</a>.</p></div>'''), on='artiklar/')
 
 # ---------- Appen ----------
@@ -259,10 +262,28 @@ page('tyngdpunkt/index.html', 'Tyngdpunkt – träningslogg och matlogg i samma 
 <div class="card">
 <p style="margin-top:0">Du loggar passen och maten och väger dig. En gång i veckan går appen igenom vikten, styrkan i varje övning och hur väl du följde planen, och föreslår en sak att ändra. Uträkningen syns, och inget ändras förrän du har godkänt det.</p>
 <p>Programmen ökar vikt och reps efter hur passen gick. Maten hittar du i Livsmedelsverkets databas och bland cirka 19 000 svenska märkesvaror, eller genom att skanna streckkoden.</p>
-<p style="margin-bottom:0">All data stannar i telefonen. 30 dagar gratis med allt, utan kort. Därefter 99 kr i månaden eller 699 kr om året.</p>
+<p style="margin-bottom:0">All data stannar i telefonen, och det finns inget konto. 30 dagar gratis med allt, utan kort. Därefter 99 kr i månaden eller 699 kr om året.</p>
 </div>
-''' + cta('<strong>Appen är i test.</strong> Har du en Android-telefon kan du testa den redan nu genom att gå med i testgruppen.') + '''
+''' + cta('<strong>Appen är i test på Google Play.</strong> Har du en Android-telefon kan du testa den redan nu.') + '''
 <p><a href="hjalp.html">Hjälp och kontakt</a> · <a href="integritet.html">Integritetspolicy</a></p>
+''', on='tyngdpunkt/')
+
+# Bli testare: appen är i stängt test, och alla knappar "Bli testare" leder hit.
+page('tyngdpunkt/testa/index.html', 'Bli testare av Tyngdpunkt | Tyngdpunkt',
+     'Testa träningsappen Tyngdpunkt gratis på Android innan den kommer ut på Google Play. Så går du med i testet, steg för steg.', f'''
+<h1>Bli testare</h1>
+<p class="lead">Tyngdpunkt är i test på Google Play, och appen finns bara för Android än så länge. Testa gratis och säg vad som saknas.</p>
+<div class="card">
+<h2 style="margin-top:0">Så går det till</h2>
+<ol>
+<li><b>Gå med i testgruppen</b> med det Google-konto som du använder i Play Butik: <a href="{GROUP}">groups.google.com/g/tyngdpunkt_app</a></li>
+<li><b>Öppna testlänken</b> på din Android-telefon och tryck <b>Bli testare</b>: <a href="{OPT_IN}">play.google.com/apps/testing/se.tyngdpunkt.app</a></li>
+<li><b>Ladda ner Tyngdpunkt</b> från Google Play som vanligt: <a href="{PLAY}">Tyngdpunkt i Play Butik</a></li>
+</ol>
+<p style="margin-bottom:0">Det räcker inte att gå med i gruppen, så gör alla tre stegen. Under testet kostar ingenting, och allt i appen är öppet.</p>
+</div>
+<p><a class="btn" href="{GROUP}">Gå med i testgruppen</a></p>
+<p>Hittar du ett fel eller saknar något? Mejla <a href="mailto:kontakt@tyngdpunkt.se">kontakt@tyngdpunkt.se</a>.</p>
 ''', on='tyngdpunkt/')
 
 # Integritetspolicy och hjälp: innehållet hämtas från _kalla/, så att texten bara finns på ett ställe.

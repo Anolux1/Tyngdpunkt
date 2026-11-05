@@ -14,7 +14,7 @@ function kcalPage() {
     b.classList.add('on'); sex = b.dataset.v; calc();
   }));
   const PACE = { fett: [0.25, 0.5, 0.75], muskler: [0.1, 0.25, 0.5] };
-  const act = (d) => (d <= 2 ? 1.4 : d === 3 ? 1.45 : d === 4 ? 1.5 : 1.55);
+  const act = (d) => (d === 0 ? 1.2 : d <= 2 ? 1.4 : d === 3 ? 1.45 : d === 4 ? 1.5 : 1.55);
   function setPace() {
     const g = $('goal').value;
     $('paceBox').style.display = PACE[g] ? '' : 'none';
@@ -42,7 +42,7 @@ function protPage() {
   // Livsmedelsverkets livsmedelsdatabas, g protein per 100 g: Kvarg naturell 0,2 % 10,0; Kyckling bröstfilé stekt u. skinn 23,0;
   // Ägg kokt 12,1 (55 g/st); Havregrynsgröt kokt m. mjölk 4,1 (3 dl ≈ 300 g); Färskost cottage cheese 4 % 13,4; Tonfisk i vatten avrunnen 24,1.
   const FOOD = [['Kvarg naturell, 250 g', '25 g'], ['Kycklingfilé, stekt, 125 g', '29 g'], ['Ägg, kokt, 3 st', '20 g'],
-    ['Havregrynsgröt med mjölk, 3 dl', '12 g'], ['Cottage cheese, 200 g', '27 g'], ['Tonfisk i vatten, 1 burk (130 g)', '31 g']];
+    ['Havregrynsgröt med mjölk, 3 dl', '12 g'], ['Cottage cheese, 200 g', '27 g'], ['Tonfisk i vatten, 130 g', '31 g']];
   $('pFood').innerHTML = FOOD.map((f) => `<tr><td>${f[0]}</td><td class="n">${f[1]}</td></tr>`).join('');
   function calc() {
     const w = num('pw'), g = $('pg').value, gw = num('pgw'), m = +$('pm').value;
