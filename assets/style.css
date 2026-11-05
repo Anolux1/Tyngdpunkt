@@ -59,3 +59,13 @@ td.n{font-family:var(--num);font-size:19px;font-weight:600;white-space:nowrap}
 footer{max-width:760px;margin:0 auto;padding:0 16px 36px;font-size:13px;color:var(--faint)}
 footer nav{margin:0 0 6px;gap:14px}
 footer nav a{color:var(--sub);padding:0}
+/* Artiklar: läsbar text, rubriker som frågor, tabeller. */
+.prose{background:var(--surface);border-radius:8px;padding:22px 20px;box-shadow:var(--shadow);margin-bottom:16px}
+.prose h1{margin-top:0}
+.prose h2{font-size:22px;margin:30px 0 8px}
+.prose h3{font-size:17px;margin:20px 0 6px}
+.prose p,.prose li{color:#2f343a;font-size:17px;line-height:1.7}
+.prose > p:first-of-type{font-size:18px;color:var(--ink)}
+.prose table{margin:12px 0;font-size:15px}
+.prose blockquote{margin:14px 0;padding:10px 14px;border-left:4px solid var(--accent);background:var(--accentbg);border-radius:0 6px 6px 0}
+.prose a{word-break:break-word}

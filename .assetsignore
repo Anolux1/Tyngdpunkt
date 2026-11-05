@@ -1,0 +1,4 @@
+# Filer som Cloudflare inte ska lägga ut på tyngdpunkt.se (källfiler och byggskript).
+_kalla
+.gitignore
+.assetsignore

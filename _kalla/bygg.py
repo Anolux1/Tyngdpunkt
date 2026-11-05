@@ -4,22 +4,44 @@ Sidorna ligger i egna mappar (kaloribehov/index.html) så att adresserna blir ko
 Alla länkar är relativa, så att samma filer fungerar både på GitHub Pages (under /Tyngdpunkt/) och på en egen domän.
 Webbplatsen ska kunna bära fler appar: allmänt innehåll (kalkylatorer, artiklar) ligger överst, varje app i en egen mapp.
 """
+import datetime
+import html as H
+import json
+import re
 from pathlib import Path
+
+import markdown
 
 ROOT = Path(__file__).resolve().parent.parent
 GROUP = 'https://groups.google.com/g/tyngdpunkt_app'
+DOMAIN = 'https://tyngdpunkt.se'
+TODAY = datetime.date.today().isoformat()
+SITEMAP = []  # (adress, ändringsdatum) för sitemap.xml
 NAV = [('kaloribehov/', 'Kaloribehov'), ('proteinbehov/', 'Protein'), ('1rm/', '1RM'), ('artiklar/', 'Artiklar'), ('tyngdpunkt/', 'Appen')]
 
 
-def page(path, title, desc, body, script='', on=None):
+def clean_url(path):
+    # Adressen som Cloudflare visar: utan index.html och utan .html.
+    u = path.removesuffix('index.html').removesuffix('.html')
+    return f'{DOMAIN}/{u}'
+
+
+def page(path, title, desc, body, script='', on=None, kind='website', jsonld=None, lastmod=None):
     depth = path.count('/')
     r = '../' * depth
+    url = clean_url(path)
+    SITEMAP.append((url, lastmod or TODAY))
+    ld = ''.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in (jsonld or []))
     on_attr = ' class="on"'
     nav = ''.join(f'<a href="{r}{href}"{on_attr if href == on else ""}>{label}</a>' for href, label in NAV)
     html = f'''<!doctype html>
 <html lang="sv"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{title}</title>
-<meta name="description" content="{desc}">
+<meta name="description" content="{H.escape(desc)}">
+<link rel="canonical" href="{url}">
+<meta property="og:type" content="{kind}"><meta property="og:title" content="{H.escape(title)}"><meta property="og:description" content="{H.escape(desc)}">
+<meta property="og:url" content="{url}"><meta property="og:locale" content="sv_SE"><meta property="og:site_name" content="Tyngdpunkt">
+{ld}
 <link rel="icon" href="{r}assets/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
@@ -50,6 +72,56 @@ def cta(text):
             '<div class="soon">Kommer snart på Google Play (Android)</div></div></div>')
 
 
+# ---------- Artiklar ----------
+# En Markdown-fil per artikel i _kalla/artiklar/<slug>.md (skrivs av marknadssessionen, godkänns av Andreas).
+# Byggs bara om status är "godkand" och publiceringsdatumet har passerat; saknat status = utkast.
+CALC = {'proteinbehov': ('proteinbehov/', 'Räkna ut ditt proteinbehov'), 'kaloribehov': ('kaloribehov/', 'Räkna ut ditt kaloribehov'),
+        '1rm': ('1rm/', 'Räkna ut ditt 1RM')}
+
+
+def front_matter(text):
+    m = re.match(r'^---\n(.*?)\n---\n(.*)$', text, re.S)
+    if not m:
+        return {}, text
+    meta = {}
+    for line in m.group(1).splitlines():
+        if ':' in line:
+            k, v = line.split(':', 1)
+            meta[k.strip()] = v.strip().strip('"')
+    return meta, m.group(2)
+
+
+def faq(md_body):
+    # "## Vanliga frågor" med "### Fråga" och svaret under – blir FAQ-schema.
+    m = re.search(r'^## Vanliga frågor\s*\n(.*?)(?=^## |\Z)', md_body, re.S | re.M)
+    if not m:
+        return []
+    out = []
+    for q, a in re.findall(r'^### (.+?)\n(.*?)(?=^### |\Z)', m.group(1), re.S | re.M):
+        text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', a).strip()
+        text = re.sub(r'[*_`]', '', text)
+        if text:
+            out.append({'@type': 'Question', 'name': q.strip(), 'acceptedAnswer': {'@type': 'Answer', 'text': text}})
+    return out
+
+
+ARTICLES = []
+for f in sorted((ROOT / '_kalla' / 'artiklar').glob('*.md')) if (ROOT / '_kalla' / 'artiklar').exists() else []:
+    meta, body = front_matter(f.read_text())
+    if meta.get('status') != 'godkand' or meta.get('publicera', '9999') > TODAY:
+        continue
+    ARTICLES.append({**meta, 'slug': f.stem, 'body': body})
+ARTICLES.sort(key=lambda a: a['publicera'], reverse=True)
+
+MONTHS = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december']
+sv_date = lambda d: f'{int(d[8:10])} {MONTHS[int(d[5:7]) - 1]} {d[:4]}'
+
+
+def article_list(items, r='{r}'):
+    return ''.join(f'<a class="tile" style="margin-bottom:10px" href="{r}artiklar/{a["slug"]}/"><b>{H.escape(a["titel"])}</b>'
+                   f'<span>{H.escape(a.get("beskrivning", ""))}</span></a>' for a in items)
+
+
 # ---------- Startsidan ----------
 page('index.html', 'Kalkylatorer för träning och kost – Tyngdpunkt',
      'Räkna ut kaloribehov, proteinbehov och 1RM på svenska, med uträkningen synlig. Från Tyngdpunkt.', '''
@@ -62,7 +134,8 @@ page('index.html', 'Kalkylatorer för träning och kost – Tyngdpunkt',
  <a class="tile" href="{r}1rm/"><b>1RM</b><span>Ditt uppskattade max ur ett vanligt set, utan att testa.</span></a>
 </div>
 <h2>Artiklar</h2>
-<p class="faq" style="color:var(--sub)">Svar på det man undrar när man tränar och vill äta rätt. <a href="{r}artiklar/">Till artiklarna</a></p>
+<p class="faq" style="color:var(--sub)">Svar på det man undrar när man tränar och vill äta rätt. <a href="{r}artiklar/">Alla artiklar</a></p>
+''' + article_list(ARTICLES[:3]) + '''
 <h2>Appen</h2>
 ''' + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. Varje vecka går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.'))
 
@@ -144,14 +217,38 @@ page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
 </div>
 ''', script='rmPage()', on='1rm/')
 
-# ---------- Artiklar ----------
+# ---------- Artikelsidorna ----------
+for a in ARTICLES:
+    md = markdown.Markdown(extensions=['tables', 'toc', 'sane_lists'])
+    content = md.convert(a['body'])
+    words = len(re.findall(r'\w+', a['body']))
+    changed = a.get('uppdaterad') or a['publicera']
+    calc = CALC.get(a.get('kalkylator', ''))
+    others = [o for o in ARTICLES if o is not a][:3]
+    url = f'{DOMAIN}/artiklar/{a["slug"]}/'
+    ld = [{'@context': 'https://schema.org', '@type': 'Article', 'headline': a['titel'], 'description': a.get('beskrivning', ''),
+           'datePublished': a['publicera'], 'dateModified': changed, 'inLanguage': 'sv', 'mainEntityOfPage': url,
+           'author': {'@type': 'Organization', 'name': 'Tyngdpunkt', 'url': DOMAIN},
+           'publisher': {'@type': 'Organization', 'name': 'Tyngdpunkt', 'logo': {'@type': 'ImageObject', 'url': f'{DOMAIN}/assets/logo.svg'}}}]
+    qa = faq(a['body'])
+    if qa:
+        ld.append({'@context': 'https://schema.org', '@type': 'FAQPage', 'mainEntity': qa})
+    body = (f'<p class="small"><a href="{{r}}artiklar/">Artiklar</a> · {sv_date(a["publicera"])}'
+            f'{f" · uppdaterad {sv_date(changed)}" if changed != a["publicera"] else ""} · {max(1, round(words / 200))} min läsning</p>'
+            f'<article class="prose"><h1>{H.escape(a["titel"])}</h1>{content}</article>'
+            + (f'<div class="card"><b>{calc[1]}</b><p class="small" style="margin:4px 0 8px">Kalkylatorn visar uträkningen steg för steg.</p>'
+               f'<a class="btn" href="{{r}}{calc[0]}">Till kalkylatorn</a></div>' if calc else '')
+            + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. Varje vecka går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.')
+            + (f'<h2>Läs mer</h2>{article_list(others)}' if others else ''))
+    page(f'artiklar/{a["slug"]}/index.html', a.get('seo_titel') or f'{a["titel"]} | Tyngdpunkt', a.get('beskrivning', ''), body,
+         on='artiklar/', kind='article', jsonld=ld, lastmod=changed)
+
 page('artiklar/index.html', 'Artiklar om träning och kost | Tyngdpunkt',
      'Artiklar om styrketräning, kost, kaloribehov och protein – på svenska, med siffror och uträkningar.', '''
 <h1>Artiklar</h1>
 <p class="lead">Svar på det man undrar när man styrketränar och vill äta rätt – med siffror och uträkningar, inte löften.</p>
-<div class="card"><p style="margin:0">De första artiklarna kommer snart. Under tiden kan du räkna på ditt
-<a href="{r}kaloribehov/">kaloribehov</a>, ditt <a href="{r}proteinbehov/">proteinbehov</a> eller ditt <a href="{r}1rm/">1RM</a>.</p></div>
-''', on='artiklar/')
+''' + (article_list(ARTICLES) if ARTICLES else '''<div class="card"><p style="margin:0">De första artiklarna kommer snart. Under tiden kan du räkna på ditt
+<a href="{r}kaloribehov/">kaloribehov</a>, ditt <a href="{r}proteinbehov/">proteinbehov</a> eller ditt <a href="{r}1rm/">1RM</a>.</p></div>'''), on='artiklar/')
 
 # ---------- Appen ----------
 page('tyngdpunkt/index.html', 'Tyngdpunkt – träningslogg och matlogg i samma app',
@@ -176,4 +273,8 @@ for name, title, desc in [('integritet', 'Integritetspolicy – Tyngdpunkt', 'In
 # Gamla adresser: integritetspolicyn är angiven i Play Console som /integritet.html.
 redirect('integritet.html', 'tyngdpunkt/integritet.html')
 redirect('support.html', 'tyngdpunkt/hjalp.html')
-print('Byggt.')
+# Sitemap och robots.txt: alla sidor utom de gamla omdirigeringarna.
+(ROOT / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+                                  + ''.join(f'<url><loc>{u}</loc><lastmod>{d}</lastmod></url>\n' for u, d in SITEMAP) + '</urlset>\n')
+(ROOT / 'robots.txt').write_text(f'User-agent: *\nAllow: /\nSitemap: {DOMAIN}/sitemap.xml\n')
+print(f'Byggt: {len(SITEMAP)} sidor, {len(ARTICLES)} publicerade artiklar.')
