@@ -1,0 +1,11 @@
+// Inställningar för Cloudflare (Workers med statiska filer). Utan den här filen frågar `wrangler deploy` efter
+// inställningar och bygget fastnar. Webbplatsen byggs lokalt med _kalla/bygg.py; här läggs bara filerna ut.
+{
+  "name": "tyngdpunkt",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": ".",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

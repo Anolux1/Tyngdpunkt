@@ -320,6 +320,16 @@ for name, title, desc in [('integritet', 'Integritetspolicy – Tyngdpunkt', 'In
 # Gamla adresser: integritetspolicyn är angiven i Play Console som /integritet.html.
 redirect('integritet.html', 'tyngdpunkt/integritet.html')
 redirect('support.html', 'tyngdpunkt/hjalp.html')
+# Sidan som visas när en adress inte finns (Cloudflare: not_found_handling = 404-page). Inte med i sitemap.
+page('404.html', 'Sidan finns inte | Tyngdpunkt', 'Sidan finns inte.', '''
+<h1>Sidan finns inte</h1>
+<p class="lead">Adressen kan ha ändrats. Börja på <a href="/">startsidan</a> eller gå direkt till en kalkylator:
+<a href="/kaloribehov/">kaloribehov</a>, <a href="/proteinbehov/">protein</a> eller <a href="/1rm/">1RM</a>.</p>
+''')
+SITEMAP[:] = [x for x in SITEMAP if not x[0].endswith('/404')]
+# 404-sidan visas på vilken adress som helst, så dess relativa länkar måste utgå från roten.
+(ROOT / '404.html').write_text((ROOT / '404.html').read_text().replace('<head>', '<head><base href="/">', 1))
+
 # Sitemap och robots.txt: alla sidor utom de gamla omdirigeringarna.
 (ROOT / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
                                   + ''.join(f'<url><loc>{u}</loc><lastmod>{d}</lastmod></url>\n' for u, d in SITEMAP) + '</urlset>\n')

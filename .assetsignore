@@ -2,3 +2,5 @@
 _kalla
 .gitignore
 .assetsignore
+wrangler.jsonc
+.git
