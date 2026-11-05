@@ -284,6 +284,20 @@ def article_images(a, out_dir):
     return done, share
 
 
+# Bildtext för foton (Wikimedia Commons, CC0/Public Domain): "Foto: <namn> / <källa>". foto_av kan vara "okänd",
+# och foto_kalla kan vara en adress – då blir källan en länk med webbplatsens namn.
+def photo_credit(a):
+    who = a.get('foto_av', '').strip()
+    who = '' if who.lower() in ('', 'okänd', 'okand', 'unknown') else H.escape(who)
+    src = a.get('foto_kalla', '').strip()
+    if src.startswith('http'):
+        label = 'Wikimedia Commons' if 'wikimedia.org' in src or 'wikipedia.org' in src else re.sub(r'^https?://(www\.)?([^/]+).*$', r'\2', src)
+        src = f'<a href="{H.escape(src)}">{label}</a>'
+    else:
+        src = H.escape(src)
+    return 'Foto: ' + ' / '.join(x for x in (who or ('okänd fotograf' if src else ''), src) if x)
+
+
 def place_images(html_text, done, a):
     # Byt <img alt="…" src="bilder/x.png"> mot WebP med mått i en figure; första bilden laddas direkt, resten lazy.
     count = [0]
@@ -294,8 +308,8 @@ def place_images(html_text, done, a):
         lazy = '' if count[0] == 0 else ' loading="lazy"'
         count[0] += 1
         credit = ''
-        if '-foto' in src and a.get('foto_av'):
-            credit = f'<figcaption>Foto: {H.escape(a["foto_av"])}{" / " + H.escape(a["foto_kalla"]) if a.get("foto_kalla") else ""}</figcaption>'
+        if '-foto' in src and (a.get('foto_av') or a.get('foto_kalla')):
+            credit = f'<figcaption>{photo_credit(a)}</figcaption>'
         return f'<figure><img src="{name}" alt="{alt}" width="{w}" height="{h}" decoding="async"{lazy}>{credit}</figure>'
     img = r'<img alt="([^"]*)" src="(bilder/[^"]+)"\s*/?>'
     html_text = re.sub(r'<p>\s*' + img + r'\s*</p>', figure, html_text)  # bild ensam i ett stycke
