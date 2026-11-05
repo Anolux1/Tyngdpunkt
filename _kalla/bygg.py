@@ -11,6 +11,7 @@ import re
 from pathlib import Path
 
 import markdown
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 # Appens läge styr knappen på alla sidor (seo-strategi.md, avsnitt 10). Byt till 'publicerad' när appen finns på
@@ -31,7 +32,7 @@ def clean_url(path):
     return f'{DOMAIN}/{u}'
 
 
-def page(path, title, desc, body, script='', on=None, kind='website', jsonld=None, lastmod=None):
+def page(path, title, desc, body, script='', on=None, kind='website', jsonld=None, lastmod=None, head=''):
     depth = path.count('/')
     r = '../' * depth
     url = clean_url(path)
@@ -46,7 +47,7 @@ def page(path, title, desc, body, script='', on=None, kind='website', jsonld=Non
 <link rel="canonical" href="{url}">
 <meta property="og:type" content="{kind}"><meta property="og:title" content="{H.escape(title)}"><meta property="og:description" content="{H.escape(desc)}">
 <meta property="og:url" content="{url}"><meta property="og:locale" content="sv_SE"><meta property="og:site_name" content="Tyngdpunkt">
-{ld}
+{head}{ld}
 <link rel="icon" href="{r}assets/logo.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&display=swap" rel="stylesheet">
@@ -117,6 +118,12 @@ ARTICLES = []
 for f in sorted((ROOT / '_kalla' / 'artiklar').glob('*.md')) if (ROOT / '_kalla' / 'artiklar').exists() else []:
     meta, body = front_matter(f.read_text())
     if meta.get('status') != 'godkand' or meta.get('publicera', '9999') > TODAY:
+        continue
+    # Saknas en bild hoppas artikeln över helt (även i listorna) i stället för att publiceras trasig.
+    refs = re.findall(r'!\[[^\]]*\]\((bilder/[^)\s]+)\)', body) + ([meta['bild']] if meta.get('bild') else [])
+    missing = [x for x in refs if not (ROOT / '_kalla' / 'artiklar' / x).exists()]
+    if missing:
+        print(f'HOPPAR ÖVER {f.stem}: bild saknas: {", ".join(missing)}')
         continue
     ARTICLES.append({**meta, 'slug': f.stem, 'body': body})
 ARTICLES.sort(key=lambda a: a['publicera'], reverse=True)
@@ -235,6 +242,66 @@ page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
 ''' + related('1rm'), script='rmPage()', on='1rm/')
 
 # ---------- Artikelsidorna ----------
+# Bilder: Markdown-bilder ![alt](bilder/<fil>) pekar på _kalla/artiklar/bilder/. Varje använd bild blir WebP i
+# artikelns mapp (högst 1200 px bred, med bredd och höjd), och bilden i fältet bild blir dessutom en JPEG för delning
+# (og:image – alla sociala tjänster läser inte WebP). Saknas en bild hoppas artikeln över i stället för att publiceras trasig.
+IMG_SRC = ROOT / '_kalla' / 'artiklar'
+
+
+def webp(src, out_dir):
+    out = out_dir / (src.stem + '.webp')
+    with Image.open(src) as im:
+        im = im.convert('RGBA' if im.mode in ('RGBA', 'LA', 'P') else 'RGB')
+        if im.width > 1200:
+            im = im.resize((1200, round(im.height * 1200 / im.width)), Image.LANCZOS)
+        im.save(out, 'WEBP', quality=82, method=6)
+        return out.name, im.width, im.height
+
+
+def share_jpeg(src, out_dir):
+    out = out_dir / (src.stem + '-dela.jpg')
+    with Image.open(src) as im:
+        bg = Image.new('RGB', im.size, '#ffffff')
+        bg.paste(im.convert('RGBA'), mask=im.convert('RGBA').split()[3])
+        if bg.width > 1200:
+            bg = bg.resize((1200, round(bg.height * 1200 / bg.width)), Image.LANCZOS)
+        bg.save(out, 'JPEG', quality=85, optimize=True)
+        return out.name, bg.width, bg.height
+
+
+def article_images(a, out_dir):
+    # Returnerar (ersättningar i HTML, delningsbild) eller None om en bild saknas.
+    refs = re.findall(r'!\[[^\]]*\]\((bilder/[^)\s]+)\)', a['body'])
+    if a.get('bild'):
+        refs.append(a['bild'])
+    missing = [x for x in refs if not (IMG_SRC / x).exists()]
+    if missing:
+        print(f'HOPPAR ÖVER {a["slug"]}: bild saknas: {", ".join(missing)}')
+        return None
+    out_dir.mkdir(parents=True, exist_ok=True)
+    done = {x: webp(IMG_SRC / x, out_dir) for x in dict.fromkeys(refs)}
+    share = share_jpeg(IMG_SRC / a['bild'], out_dir) if a.get('bild') else None
+    return done, share
+
+
+def place_images(html_text, done, a):
+    # Byt <img alt="…" src="bilder/x.png"> mot WebP med mått i en figure; första bilden laddas direkt, resten lazy.
+    count = [0]
+
+    def figure(m):
+        alt, src = m.group(1), m.group(2)
+        name, w, h = done[src]
+        lazy = '' if count[0] == 0 else ' loading="lazy"'
+        count[0] += 1
+        credit = ''
+        if '-foto' in src and a.get('foto_av'):
+            credit = f'<figcaption>Foto: {H.escape(a["foto_av"])}{" / " + H.escape(a["foto_kalla"]) if a.get("foto_kalla") else ""}</figcaption>'
+        return f'<figure><img src="{name}" alt="{alt}" width="{w}" height="{h}" decoding="async"{lazy}>{credit}</figure>'
+    img = r'<img alt="([^"]*)" src="(bilder/[^"]+)"\s*/?>'
+    html_text = re.sub(r'<p>\s*' + img + r'\s*</p>', figure, html_text)  # bild ensam i ett stycke
+    return re.sub(img, figure, html_text)
+
+
 for a in ARTICLES:
     # "## I appen" är artikelns egen mening om appen; den blir CTA-rutan och tas bort ur brödtexten.
     m = re.search(r'^## I appen\s*\n(.*?)(?=^## |\Z)', a['body'], re.S | re.M)
@@ -248,6 +315,11 @@ for a in ARTICLES:
         a['body'] += '\n\n<!--CTA-->\n'
     md = markdown.Markdown(extensions=['tables', 'toc', 'sane_lists'])
     content = md.convert(a['body'])
+    imgs = article_images(a, ROOT / 'artiklar' / a['slug'])
+    if imgs is None:
+        continue
+    done, share = imgs
+    content = place_images(content, done, a)
     calc = CALC.get(a.get('kalkylator', ''))
     # Kalkylatorrutan direkt efter det första svaret.
     calc_box = (f'<div class="card" style="box-shadow:none;border:1px solid var(--line)"><b>{calc[1]}</b>'
@@ -258,7 +330,14 @@ for a in ARTICLES:
     changed = a.get('uppdaterad') or a['publicera']
     others = [o for o in ARTICLES if o is not a][:3]
     url = f'{DOMAIN}/artiklar/{a["slug"]}/'
+    head = ''
+    if share:
+        img_url = f'{url}{share[0]}'
+        head = (f'<meta property="og:image" content="{img_url}"><meta property="og:image:width" content="{share[1]}">'
+                f'<meta property="og:image:height" content="{share[2]}"><meta property="og:image:alt" content="{H.escape(a.get("bild_alt", ""))}">'
+                f'<meta name="twitter:card" content="summary_large_image">\n')
     ld = [{'@context': 'https://schema.org', '@type': 'Article', 'headline': a['titel'], 'description': a.get('beskrivning', ''),
+           **({'image': f'{url}{share[0]}'} if share else {}),
            'datePublished': a['publicera'], 'dateModified': changed, 'inLanguage': 'sv', 'mainEntityOfPage': url,
            'author': {'@type': 'Organization', 'name': 'Tyngdpunkt', 'url': DOMAIN},
            'publisher': {'@type': 'Organization', 'name': 'Tyngdpunkt', 'logo': {'@type': 'ImageObject', 'url': f'{DOMAIN}/assets/logo.svg'}}}]
@@ -270,7 +349,7 @@ for a in ARTICLES:
             f'<article class="prose"><h1>{H.escape(a["titel"])}</h1>{content}</article>'
             + (f'<h2>Läs mer</h2>{article_list(others)}' if others else ''))
     page(f'artiklar/{a["slug"]}/index.html', a.get('seo_titel') or f'{a["titel"]} | Tyngdpunkt', a.get('beskrivning', ''), body,
-         on='artiklar/', kind='article', jsonld=ld, lastmod=changed)
+         on='artiklar/', kind='article', jsonld=ld, lastmod=changed, head=head)
 
 page('artiklar/index.html', 'Artiklar om träning och kost | Tyngdpunkt',
      'Artiklar om styrketräning, kost, kaloribehov och protein – på svenska, med siffror och uträkningar.', '''
