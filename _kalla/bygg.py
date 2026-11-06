@@ -23,6 +23,8 @@ PLAY = 'https://play.google.com/store/apps/details?id=se.tyngdpunkt.app'
 DOMAIN = 'https://tyngdpunkt.se'
 TODAY = datetime.date.today().isoformat()
 SITEMAP = []  # (adress, ändringsdatum) för sitemap.xml
+# Senaste ändringen av sidorna utan artiklar. Räkna upp när sidornas innehåll ändras – annars får Google samma datum som förut.
+SITE_CHANGED = '2026-11-05'
 NAV = [('kaloribehov/', 'Kaloribehov'), ('proteinbehov/', 'Protein'), ('1rm/', '1RM'), ('artiklar/', 'Artiklar'), ('tyngdpunkt/', 'Appen')]
 
 
@@ -36,7 +38,7 @@ def page(path, title, desc, body, script='', on=None, kind='website', jsonld=Non
     depth = path.count('/')
     r = '../' * depth
     url = clean_url(path)
-    SITEMAP.append((url, lastmod or TODAY))
+    SITEMAP.append((url, lastmod or SITE_CHANGED))
     ld = ''.join(f'<script type="application/ld+json">{json.dumps(x, ensure_ascii=False)}</script>' for x in (jsonld or []))
     on_attr = ' class="on"'
     nav = ''.join(f'<a href="{r}{href}"{on_attr if href == on else ""}>{label}</a>' for href, label in NAV)
@@ -138,9 +140,18 @@ def article_list(items, r='{r}'):
 
 
 # "Läs mer" under en kalkylator: de senaste artiklarna som hör till den (fältet kalkylator), högst fem.
+def for_calc(calc):
+    return [a for a in ARTICLES if a.get('kalkylator') == calc][:5]
+
+
 def related(calc):
-    items = [a for a in ARTICLES if a.get('kalkylator') == calc][:5]
+    items = for_calc(calc)
     return f'<h2>Läs mer</h2>{article_list(items)}' if items else ''
+
+
+def latest(items):
+    # En sida som listar artiklar ändras när en artikel tillkommer eller uppdateras.
+    return max([SITE_CHANGED] + [a.get('uppdaterad') or a['publicera'] for a in items])
 
 
 # ---------- Startsidan ----------
@@ -158,7 +169,8 @@ page('index.html', 'Kalkylatorer för träning och kost | Tyngdpunkt',
 <p class="faq" style="color:var(--sub)">Svar på vanliga frågor om styrketräning och kost, med siffror och källor. <a href="{r}artiklar/">Alla artiklar</a></p>
 ''' + article_list(ARTICLES[:3]) + '''
 <h2>Appen</h2>
-''' + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. En gång i veckan går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.'))
+''' + cta('<strong>Tyngdpunkt</strong> är träningslogg och matlogg i samma app. En gång i veckan går den igenom vikten, styrkan och hur väl du följt planen, och föreslår en sak att ändra.'),
+     lastmod=latest(ARTICLES[:3]))
 
 # ---------- Kaloribehov ----------
 page('kaloribehov/index.html', 'Räkna ut ditt kaloribehov – kalkylator | Tyngdpunkt',
@@ -188,7 +200,8 @@ page('kaloribehov/index.html', 'Räkna ut ditt kaloribehov – kalkylator | Tyng
  <p>Mer: <a href="{r}proteinbehov/">hur mycket protein du behöver</a> · <a href="{r}1rm/">räkna ut ditt 1RM</a></p>
  <p class="small">Källa för takten: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC4033492/">Helms m.fl. (2014), Journal of the International Society of Sports Nutrition</a>.</p>
 </div>
-''' + related('kaloribehov'), script='kcalPage()', on='kaloribehov/')
+''' + related('kaloribehov'), script='kcalPage()', on='kaloribehov/',
+     lastmod=latest(for_calc('kaloribehov')))
 
 # ---------- Protein ----------
 page('proteinbehov/index.html', 'Hur mycket protein behöver jag? Kalkylator | Tyngdpunkt',
@@ -216,7 +229,8 @@ page('proteinbehov/index.html', 'Hur mycket protein behöver jag? Kalkylator | T
  <p>Mer: <a href="{r}kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="{r}1rm/">räkna ut ditt 1RM</a></p>
  <p class="small">Källa: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC5867436/">Morton m.fl. (2018), British Journal of Sports Medicine</a>.</p>
 </div>
-''' + related('proteinbehov'), script='protPage()', on='proteinbehov/')
+''' + related('proteinbehov'), script='protPage()', on='proteinbehov/',
+     lastmod=latest(for_calc('proteinbehov')))
 
 # ---------- 1RM ----------
 page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
@@ -239,7 +253,8 @@ page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
  <p class="small">Formeln: Epley (1985).</p>
  <p>Mer: <a href="{r}kaloribehov/">räkna ut ditt kaloribehov</a> · <a href="{r}proteinbehov/">hur mycket protein du behöver</a></p>
 </div>
-''' + related('1rm'), script='rmPage()', on='1rm/')
+''' + related('1rm'), script='rmPage()', on='1rm/',
+     lastmod=latest(for_calc('1rm')))
 
 # ---------- Artikelsidorna ----------
 # Bilder: Markdown-bilder ![alt](bilder/<fil>) pekar på _kalla/artiklar/bilder/. Varje använd bild blir WebP i
@@ -370,7 +385,7 @@ page('artiklar/index.html', 'Artiklar om träning och kost | Tyngdpunkt',
 <h1>Artiklar</h1>
 <p class="lead">Svar på vanliga frågor om styrketräning och kost. Med siffror, uträkningar och källor.</p>
 ''' + (article_list(ARTICLES) if ARTICLES else '''<div class="card"><p style="margin:0">Den första artikeln kommer den 7 november. Under tiden kan du räkna på ditt
-<a href="{r}kaloribehov/">kaloribehov</a>, ditt <a href="{r}proteinbehov/">proteinbehov</a> eller ditt <a href="{r}1rm/">1RM</a>.</p></div>'''), on='artiklar/')
+<a href="{r}kaloribehov/">kaloribehov</a>, ditt <a href="{r}proteinbehov/">proteinbehov</a> eller ditt <a href="{r}1rm/">1RM</a>.</p></div>'''), on='artiklar/', lastmod=latest(ARTICLES))
 
 # ---------- Appen ----------
 page('tyngdpunkt/index.html', 'Tyngdpunkt – träningslogg och matlogg i samma app',
