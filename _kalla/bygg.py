@@ -116,18 +116,25 @@ def faq(md_body):
     return out
 
 
+# Artiklarna läses från två mappar: _kalla/artiklar/ (utkast och godkända, bara på Andreas dator) och _kalla/godkanda/
+# (godkända kopior i repot, så att GitHub kan publicera på morgonen utan datorn – se synka.py). Finns samma artikel
+# i båda gäller den lokala.
+SOURCES = {}
+for d in (ROOT / '_kalla' / 'godkanda', ROOT / '_kalla' / 'artiklar'):
+    for f in sorted(d.glob('*.md')) if d.exists() else []:
+        SOURCES[f.stem] = f
 ARTICLES = []
-for f in sorted((ROOT / '_kalla' / 'artiklar').glob('*.md')) if (ROOT / '_kalla' / 'artiklar').exists() else []:
+for f in SOURCES.values():
     meta, body = front_matter(f.read_text())
     if meta.get('status') != 'godkand' or meta.get('publicera', '9999') > TODAY:
         continue
     # Saknas en bild hoppas artikeln över helt (även i listorna) i stället för att publiceras trasig.
     refs = re.findall(r'!\[[^\]]*\]\((bilder/[^)\s]+)\)', body) + ([meta['bild']] if meta.get('bild') else [])
-    missing = [x for x in refs if not (ROOT / '_kalla' / 'artiklar' / x).exists()]
+    missing = [x for x in refs if not (f.parent / x).exists()]
     if missing:
         print(f'HOPPAR ÖVER {f.stem}: bild saknas: {", ".join(missing)}')
         continue
-    ARTICLES.append({**meta, 'slug': f.stem, 'body': body})
+    ARTICLES.append({**meta, 'slug': f.stem, 'body': body, 'dir': f.parent})
 ARTICLES.sort(key=lambda a: a['publicera'], reverse=True)
 
 MONTHS = ['januari', 'februari', 'mars', 'april', 'maj', 'juni', 'juli', 'augusti', 'september', 'oktober', 'november', 'december']
@@ -260,11 +267,19 @@ page('1rm/index.html', '1RM-kalkylator – räkna ut ditt max | Tyngdpunkt',
 # Bilder: Markdown-bilder ![alt](bilder/<fil>) pekar på _kalla/artiklar/bilder/. Varje använd bild blir WebP i
 # artikelns mapp (högst 1200 px bred, med bredd och höjd), och bilden i fältet bild blir dessutom en JPEG för delning
 # (og:image – alla sociala tjänster läser inte WebP). Saknas en bild hoppas artikeln över i stället för att publiceras trasig.
-IMG_SRC = ROOT / '_kalla' / 'artiklar'
+
+
+def fresh(out, src):
+    # En bild som redan är gjord görs inte om: olika Pillow-versioner (Mac och GitHub) ger olika bytes, och då skulle
+    # varje bygge bli en ny commit. Ändras källbilden på datorn blir den nyare än utfilen och görs om.
+    return out.exists() and out.stat().st_mtime >= src.stat().st_mtime
 
 
 def webp(src, out_dir):
     out = out_dir / (src.stem + '.webp')
+    if fresh(out, src):
+        with Image.open(out) as im:
+            return out.name, im.width, im.height
     with Image.open(src) as im:
         im = im.convert('RGBA' if im.mode in ('RGBA', 'LA', 'P') else 'RGB')
         if im.width > 1200:
@@ -275,6 +290,9 @@ def webp(src, out_dir):
 
 def share_jpeg(src, out_dir):
     out = out_dir / (src.stem + '-dela.jpg')
+    if fresh(out, src):
+        with Image.open(out) as im:
+            return out.name, im.width, im.height
     with Image.open(src) as im:
         bg = Image.new('RGB', im.size, '#ffffff')
         bg.paste(im.convert('RGBA'), mask=im.convert('RGBA').split()[3])
@@ -289,13 +307,14 @@ def article_images(a, out_dir):
     refs = re.findall(r'!\[[^\]]*\]\((bilder/[^)\s]+)\)', a['body'])
     if a.get('bild'):
         refs.append(a['bild'])
-    missing = [x for x in refs if not (IMG_SRC / x).exists()]
+    src = a['dir']
+    missing = [x for x in refs if not (src / x).exists()]
     if missing:
         print(f'HOPPAR ÖVER {a["slug"]}: bild saknas: {", ".join(missing)}')
         return None
     out_dir.mkdir(parents=True, exist_ok=True)
-    done = {x: webp(IMG_SRC / x, out_dir) for x in dict.fromkeys(refs)}
-    share = share_jpeg(IMG_SRC / a['bild'], out_dir) if a.get('bild') else None
+    done = {x: webp(src / x, out_dir) for x in dict.fromkeys(refs)}
+    share = share_jpeg(src / a['bild'], out_dir) if a.get('bild') else None
     return done, share
 
 

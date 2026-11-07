@@ -4,3 +4,4 @@ _kalla
 .assetsignore
 wrangler.jsonc
 .git
+.github

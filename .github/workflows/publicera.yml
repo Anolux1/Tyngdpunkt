@@ -1,0 +1,31 @@
+# Publicerar dagens godkända artikel varje morgon, utan att Andreas dator behöver vara på.
+# Artiklarna ligger i _kalla/godkanda/ (dit kopierar _kalla/synka.py dem när Andreas har godkänt). Bygget tar bara med
+# artiklar vars datum har kommit; blir sidorna annorlunda committas de, och Cloudflare lägger ut sajten.
+name: Publicera artiklar
+on:
+  schedule:
+    - cron: '0 5 * * *'  # 06:00 svensk vintertid, 07:00 sommartid. GitHub startar ofta jobbet en stund senare.
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency: publicera
+jobs:
+  publicera:
+    runs-on: ubuntu-latest
+    env:
+      TZ: Europe/Stockholm
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      # Samma versioner som på datorn, annars blir HTML och bilder olika och varje bygge en ny commit.
+      - run: pip install markdown==3.10.2 Pillow==12.0.0
+      - run: python3 _kalla/bygg.py
+      - name: Commit och push
+        run: |
+          git add -A
+          if git diff --cached --quiet; then echo "Inget nytt att publicera."; exit 0; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit -m "Publicera artiklar $(date +%F)"
+          git push
