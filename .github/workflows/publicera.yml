@@ -32,3 +32,16 @@ jobs:
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit -m "Publicera artiklar $(date +%F)"
           git push
+      # Cloudflare har en gång låtit bli att bygga en commit (3903fe4, 12 nov), så artikeln fanns i repot men inte på
+      # sajten. Svarar någon sida i sitemapen inte 200 startas ett nytt bygge med en tom commit.
+      - name: Kontrollera att sajten är uppdaterad
+        run: |
+          sleep 120
+          missing=$(grep -o '<loc>[^<]*' sitemap.xml | sed 's/<loc>//' | while read u; do
+            [ "$(curl -s -o /dev/null -w '%{http_code}' "$u")" = 200 ] || echo "$u"; done)
+          if [ -z "$missing" ]; then echo "Alla sidor svarar."; exit 0; fi
+          echo "Svarar inte: $missing"
+          git pull -q --rebase
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --allow-empty -m "Bygg om: sidor saknades på sajten"
+          git push
