@@ -24,7 +24,7 @@ DOMAIN = 'https://tyngdpunkt.se'
 TODAY = datetime.date.today().isoformat()
 SITEMAP = []  # (adress, ändringsdatum) för sitemap.xml
 # Senaste ändringen av sidorna utan artiklar. Räkna upp när sidornas innehåll ändras – annars får Google samma datum som förut.
-SITE_CHANGED = '2026-11-05'
+SITE_CHANGED = '2026-11-19'
 NAV = [('kaloribehov/', 'Kaloribehov'), ('proteinbehov/', 'Protein'), ('1rm/', '1RM'), ('artiklar/', 'Artiklar'), ('tyngdpunkt/', 'Appen')]
 
 
@@ -59,7 +59,7 @@ def page(path, title, desc, body, script='', on=None, kind='website', jsonld=Non
 <main>
 {body.replace('{r}', r)}
 </main>
-<footer><nav><a href="{r}kaloribehov/">Kaloribehov</a><a href="{r}proteinbehov/">Protein</a><a href="{r}1rm/">1RM</a><a href="{r}artiklar/">Artiklar</a><a href="{r}tyngdpunkt/hjalp.html">Hjälp och kontakt</a><a href="{r}tyngdpunkt/integritet.html">Integritetspolicy</a></nav>
+<footer><nav><a href="{r}kaloribehov/">Kaloribehov</a><a href="{r}proteinbehov/">Protein</a><a href="{r}1rm/">1RM</a><a href="{r}artiklar/">Artiklar</a><a href="{r}tyngdpunkt/hjalp.html">Hjälp och kontakt</a><a href="{r}tyngdpunkt/integritet.html">Integritetspolicy</a><a href="{r}tyngdpunkt/villkor.html">Användarvillkor</a></nav>
 Kalkylatorerna ger uppskattningar, inte medicinska råd. Livsmedelsdata: Livsmedelsverkets livsmedelsdatabas.</footer>
 {f"<script src='{r}assets/kalkyl.js'></script><script>{script}</script>" if script else ''}
 </body></html>
@@ -418,7 +418,7 @@ page('tyngdpunkt/index.html', 'Tyngdpunkt – träningslogg och matlogg i samma 
 <p style="margin-bottom:0">All data stannar i telefonen, och det finns inget konto. 30 dagar gratis med allt, utan kort. Därefter 99 kr i månaden eller 699 kr om året.</p>
 </div>
 ''' + cta('<strong>Appen är i test på Google Play.</strong> Har du en Android-telefon kan du testa den redan nu.') + '''
-<p><a href="hjalp.html">Hjälp och kontakt</a> · <a href="integritet.html">Integritetspolicy</a></p>
+<p><a href="hjalp.html">Hjälp och kontakt</a> · <a href="integritet.html">Integritetspolicy</a> · <a href="villkor.html">Användarvillkor</a></p>
 ''', on='tyngdpunkt/')
 
 # Bli testare: appen är i stängt test, och alla knappar "Bli testare" leder hit.
@@ -441,7 +441,8 @@ page('tyngdpunkt/testa/index.html', 'Bli testare av Tyngdpunkt | Tyngdpunkt',
 
 # Integritetspolicy och hjälp: innehållet hämtas från _kalla/, så att texten bara finns på ett ställe.
 for name, title, desc in [('integritet', 'Integritetspolicy – Tyngdpunkt', 'Integritetspolicy för appen Tyngdpunkt: all data stannar i telefonen.'),
-                          ('hjalp', 'Hjälp och kontakt – Tyngdpunkt', 'Hjälp och kontakt för appen Tyngdpunkt.')]:
+                          ('hjalp', 'Hjälp och kontakt – Tyngdpunkt', 'Hjälp och kontakt för appen Tyngdpunkt.'),
+                          ('villkor', 'Användarvillkor – Tyngdpunkt', 'Användarvillkor för appen Tyngdpunkt: provperiod, prenumeration, uppsägning och ångerrätt.')]:
     page(f'tyngdpunkt/{name}.html', title, desc, '<div class="doc">' + (ROOT / '_kalla' / f'{name}.html').read_text() + '</div>', on='tyngdpunkt/')
 
 # Gamla adresser: integritetspolicyn är angiven i Play Console som /integritet.html.
